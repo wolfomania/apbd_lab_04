@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Compression;
 
 namespace LegacyApp
 {
@@ -6,24 +7,12 @@ namespace LegacyApp
     {
         public bool AddUser(string firstName, string lastName, string email, DateTime dateOfBirth, int clientId)
         {
-            if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
-            {
-                return false;
-            }
 
-            if (!email.Contains("@") && !email.Contains("."))
-            {
+            if (!IsValidCredentials(firstName, lastName, email))
                 return false;
-            }
 
-            var now = DateTime.Now;
-            int age = now.Year - dateOfBirth.Year;
-            if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
-
-            if (age < 21)
-            {
+            if (!IsValidBirthDate(dateOfBirth))
                 return false;
-            }
 
             var clientRepository = new ClientRepository();
             var client = clientRepository.GetById(clientId);
@@ -67,6 +56,25 @@ namespace LegacyApp
 
             UserDataAccess.AddUser(user);
             return true;
+        }
+
+        private bool IsValidBirthDate(DateTime dateOfBirth)
+        {
+            var now = DateTime.Now;
+            var age = now.Year - dateOfBirth.Year;
+            if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
+
+            return age >= 21;
+        }
+
+        private static bool IsValidCredentials(string firstName, string lastName, string email)
+        {
+            if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
+            {
+                return false;
+            }
+
+            return email.Contains("@") || email.Contains(".");
         }
     }
 }
