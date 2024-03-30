@@ -26,6 +26,19 @@ namespace LegacyApp
                 LastName = lastName
             };
 
+            SetCreditLimit(user, client);
+
+            if (user.HasCreditLimit && user.CreditLimit < 500)
+            {
+                return false;
+            }
+
+            UserDataAccess.AddUser(user);
+            return true;
+        }
+
+        private static void SetCreditLimit(User user, Client client)
+        {
             if (client.Type == "VeryImportantClient")
             {
                 user.HasCreditLimit = false;
@@ -34,7 +47,7 @@ namespace LegacyApp
             {
                 using (var userCreditService = new UserCreditService())
                 {
-                    int creditLimit = userCreditService.GetCreditLimit(user.LastName, user.DateOfBirth);
+                    var creditLimit = userCreditService.GetCreditLimit(user.LastName, user.DateOfBirth);
                     creditLimit = creditLimit * 2;
                     user.CreditLimit = creditLimit;
                 }
@@ -48,14 +61,6 @@ namespace LegacyApp
                     user.CreditLimit = creditLimit;
                 }
             }
-
-            if (user.HasCreditLimit && user.CreditLimit < 500)
-            {
-                return false;
-            }
-
-            UserDataAccess.AddUser(user);
-            return true;
         }
 
         private bool IsValidBirthDate(DateTime dateOfBirth)
